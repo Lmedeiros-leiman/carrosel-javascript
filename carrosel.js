@@ -15,12 +15,11 @@ const carrosel = embrulhocarrosel.children[1];
 const flechas = [embrulhocarrosel.children[0],embrulhocarrosel.children[3]];
 const elementoscarrosel = carrosel.children;
 const primeiroelemento = elementoscarrosel[0];
-const tamanhoprimeiroelemento = primeiroelemento.clientWidth + 14;
+let tamanhoprimeiroelemento = verificartamanho();
+function verificartamanho() {return primeiroelemento.clientWidth + 14;}
 const ultimoelemento = elementoscarrosel[elementoscarrosel.length - 1];
 const bolas = embrulhocarrosel.children[2];
-
-
-let iniciado = false, pagexantigo, estapuxando = false, scrollleftantigo, diferencaposicao;
+let iniciado = false, pagexantigo, estapuxando = false, posicaoantiga, diferencaposicao;
 
 
 const mostraresconderflechas = () =>{
@@ -35,40 +34,57 @@ flechas.forEach( icone => {
         setTimeout(() => mostraresconderflechas(), 60);
    });
 });
-
+let indexmultiplicador = 0;
 const autoescorrega = () => {
-    console.log(carrosel.scrollHeight);
-    console.log(carrosel.scrollWidth);
+    if(indexmultiplicador < 0) {
+        indexmultiplicador = 0;
+    }
+    if (indexmultiplicador >= elementoscarrosel.length) {
+        indexmultiplicador = elementoscarrosel.length ;
+    }
+
+    let posicaoatual = carrosel.scrollLeft;
+
+        if(posicaoatual > posicaoantiga) {
+
+            if (indexmultiplicador == elementoscarrosel.length -1) {
+                indexmultiplicador = elementoscarrosel.length - 1;
+            } else{
+                indexmultiplicador++;
+            }
+        } else{
+            //console.log("ESQUERDA");
+            indexmultiplicador = indexmultiplicador - 1;
+        }
+    console.log(indexmultiplicador);
+    carrosel.scrollLeft = (elementoscarrosel[0].clientWidth + 14) * (indexmultiplicador);
+
+
 
     // A ideia:
     //  dividir o scroll width em parcelas, cada uma sendo igual a :
     //  (larguraelemento + margem) * Multiplicador = elemento centralizado
+    //  scrollleft = posicaoatualbarra
+    //  calcular a diferença:
+    //  multiplicador = (posicaoatual / tamanhoelementos) / 100;
     //
-    //
-    //
-    return;
-    if (carrosel.scrollLeft == (carrosel.scrollWidth - carrosel.clientWidth)) return ;
-    diferencaposicao = Math.abs(diferencaposicao);
-
-    let diferencavalores = tamanhoprimeiroelemento- diferencaposicao;
-
-    if (carrosel.scrollLeft > scrollleftantigo) {
-        return carrosel.scrollLeft -= diferencaposicao > tamanhoprimeiroelemento / 3 ? diferencavalores : -diferencaposicao;
-    }
-    carrosel.scrollLeft += diferencaposicao > tamanhoprimeiroelemento / 3 ? diferencavalores : -diferencaposicao;
+    //  Solução:
+    //  utilizando o elemento atual como base, ir para o próximo elemento quando uma porcentagem dele estiver passada, se não, focar nele.
+    //  ideia : a porcentagem é fixa 40%, problema : elementos menores serão inconsistentes.
+    //  ideia : o tamanho do elemento e quantos elementos por vez são mostrados no carrosel.
 };
 
 const inicioescorrega = (e) => {
     iniciado = true;
     pagexantigo = e.pageX || e.touches[0].pageX;
-    scrollleftantigo = carrosel.scrollLeft;
+    posicaoantiga = carrosel.scrollLeft;
 }
 const escorrega = (e) => {
     if (!iniciado) return;
     e.preventDefault();
     diferencaposicao = (e.pageX || e.touches[0].pageX) - pagexantigo;
     carrosel.style.cursor = "grabbing";
-    carrosel.scrollLeft = scrollleftantigo - diferencaposicao;
+    carrosel.scrollLeft = posicaoantiga - diferencaposicao;
     estapuxando = true;
     setTimeout(() => mostraresconderflechas(), 60);
 }
@@ -91,3 +107,4 @@ carrosel.addEventListener("touchmove",escorrega);
 carrosel.addEventListener("mouseup",fimescorrega);
 carrosel.addEventListener("touchend",fimescorrega);
 carrosel.addEventListener("mouseleave",fimescorrega)
+
