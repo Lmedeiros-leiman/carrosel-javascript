@@ -1,110 +1,141 @@
-
-
-
-
-
-//
-// Lista :
-// 0 - <i>
-//1 - <div id=carrosel>
-//2 - <div id="bolas">
-//3 - <i>
-//
-const embrulhocarrosel = document.querySelector("#embrulhocarrosel");
-const carrosel = embrulhocarrosel.children[1];
-const flechas = [embrulhocarrosel.children[0],embrulhocarrosel.children[3]];
-const elementoscarrosel = carrosel.children;
-const primeiroelemento = elementoscarrosel[0];
-let tamanhoprimeiroelemento = verificartamanho();
-function verificartamanho() {return primeiroelemento.clientWidth + 14;}
-const ultimoelemento = elementoscarrosel[elementoscarrosel.length - 1];
-const bolas = embrulhocarrosel.children[2];
-let iniciado = false, pagexantigo, estapuxando = false, posicaoantiga, diferencaposicao;
-
-
-const mostraresconderflechas = () =>{
-    let tamanhobarra = carrosel.scrollWidth - carrosel.clientWidth;
-    flechas[0].style.display = carrosel.scrollLeft == 0 ? "none" : "block";
-    flechas[1].style.display = carrosel.scrollLeft == tamanhobarra ? "none" : "block";
+let alertado = false;
+let indexmultiplicador = [];
+function random_rgba() {
+    var o = Math.round, r = Math.random, s = 255;
+    return 'rgba(' + o(r()*s) + ',' + o(r()*s) + ',' + o(r()*s) + ',' + r().toFixed(1) + ')';
 }
 
-flechas.forEach( icone => {
-   icone.addEventListener("click", () => {
-       if (icone.classList.contains("esquerda")) { carrosel.scrollLeft += -tamanhoprimeiroelemento;}else{carrosel.scrollLeft += tamanhoprimeiroelemento;}
-        setTimeout(() => mostraresconderflechas(), 60);
-   });
-});
-let indexmultiplicador = 0;
-const autoescorrega = () => {
-    if(indexmultiplicador < 0) {
-        indexmultiplicador = 0;
+
+const embrulhoscarroseis = document.querySelectorAll(".carrosel");
+embrulhoscarroseis.forEach((embrulho,index) => {
+    indexmultiplicador.push(0);
+    embrulho.classList.remove("carrosel");
+    embrulho.classList.add("embrulhocarrosel");
+
+    let carrosel = document.createElement("div");
+    carrosel.classList.add("carrosel");
+
+    let listabolas = document.createElement("div");
+    listabolas.classList.add("bolas");
+    while (embrulho.childNodes.length > 0) {
+        carrosel.appendChild(embrulho.childNodes[0]);
     }
-    if (indexmultiplicador >= elementoscarrosel.length) {
-        indexmultiplicador = elementoscarrosel.length ;
-    }
 
-    let posicaoatual = carrosel.scrollLeft;
-
-        if(posicaoatual > posicaoantiga) {
-
-            if (indexmultiplicador == elementoscarrosel.length -1) {
-                indexmultiplicador = elementoscarrosel.length - 1;
-            } else{
-                indexmultiplicador++;
-            }
-        } else{
-            //console.log("ESQUERDA");
-            indexmultiplicador = indexmultiplicador - 1;
+    for ( var i = 0 ; i < carrosel.children.length; i++){
+        listabolas.append(document.createElement("div"));
+        if ( carrosel.children[i].tagName == ("IMG" || "PICTURE") && !alertado) {
+            console.warn("Alerta carrosel: imagem detectada! \n " +
+                "Por favor garantir que as imagens dentro do carrosel possuam o atributo \n" +
+                "draggable=false \n" +
+                "para garantir uma experiencia optimizada.");
+            alertado = true;
+            carrosel.children[i].setAttribute("draggable",false);
         }
-    console.log(indexmultiplicador);
-    carrosel.scrollLeft = (elementoscarrosel[0].clientWidth + 14) * (indexmultiplicador);
+        carrosel.children[i].style.backgroundColor = random_rgba();
+
+    }
+
+    let setas = [document.createElement("i"),document.createElement("i")];
+    setas[0].classList.add("esquerda"); setas[1].classList.add("direita");
+
+    carrosel.children[0].style.marginLeft = 0;
+
+    setas.forEach((seta) => {
+            let tamanhoprimeiroelemento = carrosel.children[1].width;
+            seta.addEventListener("click", () => {
+                let tamanhoprimeiroelemento = (carrosel.children[1].clientWidth) + 14;
+                console.log("clicado.");
+
+
+                if (seta.classList.contains("esquerda")) {
+                    carrosel.scrollLeft -= tamanhoprimeiroelemento ;
+                }else{
+                    carrosel.scrollLeft += tamanhoprimeiroelemento ;
+                }
+                setTimeout(() => mostraresconderflechas(carrosel), 60);
+            });
+    });
 
 
 
-    // A ideia:
-    //  dividir o scroll width em parcelas, cada uma sendo igual a :
-    //  (larguraelemento + margem) * Multiplicador = elemento centralizado
-    //  scrollleft = posicaoatualbarra
-    //  calcular a diferença:
-    //  multiplicador = (posicaoatual / tamanhoelementos) / 100;
-    //
-    //  Solução:
-    //  utilizando o elemento atual como base, ir para o próximo elemento quando uma porcentagem dele estiver passada, se não, focar nele.
-    //  ideia : a porcentagem é fixa 40%, problema : elementos menores serão inconsistentes.
-    //  ideia : o tamanho do elemento e quantos elementos por vez são mostrados no carrosel.
-};
 
-const inicioescorrega = (e) => {
-    iniciado = true;
+
+    embrulho.append(listabolas);
+
+    //setas
+    carrosel.insertBefore(setas[0],carrosel.children[0]);
+    carrosel.append(setas[1]);
+
+    embrulho.append(carrosel)
+
+    //seção addEventListener
+
+    carrosel.addEventListener("mousedown",(evt) =>{ inicioescorrega(evt,carrosel,index)});
+    carrosel.addEventListener("touchstart",(evt) =>{ inicioescorrega(evt,carrosel,index)});
+
+    carrosel.addEventListener("mousemove",(evt) =>{escorrega(evt,carrosel,index)});
+    carrosel.addEventListener("touchmove",(evt) =>{escorrega(evt,carrosel,index)});
+
+    carrosel.addEventListener("mouseup",(evt) =>{fimescorrega(evt,carrosel,index)});
+    carrosel.addEventListener("touchend",(evt) =>{fimescorrega(evt,carrosel,index)});
+    carrosel.addEventListener("mouseleave",(evt) =>{fimescorrega(evt,carrosel,index)});
+
+});
+
+
+
+const inicioescorrega = (e,carrosel,index) => {
+    carrosel.classList.add("iniciado");
     pagexantigo = e.pageX || e.touches[0].pageX;
     posicaoantiga = carrosel.scrollLeft;
+
 }
-const escorrega = (e) => {
-    if (!iniciado) return;
+const escorrega = (e,carrosel,index) => {
+    if (!carrosel.classList.contains("iniciado")) return;
     e.preventDefault();
     diferencaposicao = (e.pageX || e.touches[0].pageX) - pagexantigo;
     carrosel.style.cursor = "grabbing";
     carrosel.scrollLeft = posicaoantiga - diferencaposicao;
-    estapuxando = true;
-    setTimeout(() => mostraresconderflechas(), 60);
+    carrosel.classList.add("estapuxando");
+    setTimeout(() => mostraresconderflechas(carrosel), 60); // a ser implementado
+
 }
-const fimescorrega = (e) => {
-    iniciado = false;
+const fimescorrega = (e,carrosel,index) => {
+    carrosel.classList.remove("iniciado");
     carrosel.style.cursor = "grab";
 
-    if(!estapuxando) return;
-    estapuxando = false;
+    if(!carrosel.classList.contains("estapuxando")) return;
+    carrosel.classList.remove("estapuxando");
 
-    autoescorrega();
+    autoescorrega(carrosel,index);
+}
+const mostraresconderflechas = (carrosel) =>{
+    let tamanhobarra = carrosel.scrollWidth - carrosel.clientWidth;
+    carrosel.children[0].style.display = carrosel.scrollLeft == 0 ? "none" : "block";
+    carrosel.children[carrosel.children.length - 1].style.display = carrosel.scrollLeft == tamanhobarra ? "none" : "block";
 }
 
-carrosel.addEventListener("mousedown",inicioescorrega);
-carrosel.addEventListener("touchstart",inicioescorrega);
 
-carrosel.addEventListener("mousemove",escorrega);
-carrosel.addEventListener("touchmove",escorrega);
+const autoescorrega = (carrosel,index) => {
+    let posicaoatual = carrosel.scrollLeft;
 
-carrosel.addEventListener("mouseup",fimescorrega);
-carrosel.addEventListener("touchend",fimescorrega);
-carrosel.addEventListener("mouseleave",fimescorrega)
+    if (posicaoatual > posicaoantiga) {
 
+        if (indexmultiplicador[index] == carrosel.children.length - 1) {
+            indexmultiplicador[index] = carrosel.children.length - 1;
+        } else {indexmultiplicador[index]++;}
+
+    } else {indexmultiplicador[index] = indexmultiplicador[index] - 1;}
+    //testes de limite
+    if (indexmultiplicador[index] < 0) {
+        indexmultiplicador[index] = 0;
+    }
+    if (indexmultiplicador[index] >= carrosel.children.length) {
+        indexmultiplicador[index] = carrosel.children.length;
+    }
+
+    //escorregasozinho para localização
+
+    carrosel.scrollLeft = (carrosel.children[1].clientWidth + 14) * (indexmultiplicador[index]);
+
+}
