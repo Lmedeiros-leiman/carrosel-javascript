@@ -1,71 +1,156 @@
-let alertado = false;
 let indexmultiplicador = [];
+let colocar_bolas = false;
 function random_rgba() {
     var o = Math.round, r = Math.random, s = 255;
     return 'rgba(' + o(r()*s) + ',' + o(r()*s) + ',' + o(r()*s) + ',' + r().toFixed(1) + ')';
 }
 
-
 const embrulhoscarroseis = document.querySelectorAll(".carrosel");
 embrulhoscarroseis.forEach((embrulho,index) => {
+    let itensporpartes = 1
+    if (embrulho.querySelector("input")) {
+        let b = embrulho.querySelectorAll("input");
+        b.forEach((item) => {
+            if (item.classList.contains("quantidade")) {
+                itensporpartes = item.defaultValue;
+                item.remove();
+            }
+        });
+    }
+
+
     indexmultiplicador.push(0);
     embrulho.classList.remove("carrosel");
-    embrulho.classList.add("embrulhocarrosel");
+    embrulho.classList.add("embrulhocarrosel")
+
+    //seta as propriedades do embrulho
+    embrulho.style.width = "90vw";
+    embrulho.style.marginTop = "18px";
+    embrulho.style.marginBottom = "26px";
+    embrulho.style.position = "relative";
+    embrulho.style.backgroundColor = "transparent";
+    //
+
 
     let carrosel = document.createElement("div");
     carrosel.classList.add("carrosel");
 
+    // seta as propriedas do carrosel
+    carrosel.style.display = "flex";
+    carrosel.style.flexWrap = "nowrap";
+    carrosel.style.flexDirection = "row";
+    carrosel.style.overflow = "hidden";
+    carrosel.style.cursor = "grab";
+    carrosel.style.scrollBehavior = "smooth";
+    carrosel.style.scrollSnapAlign = "center";
+    //
+
+
+
     let listabolas = document.createElement("div");
     listabolas.classList.add("bolas");
+    listabolas.style.position = "absolute";
+    listabolas.style.display = "flex";
+    listabolas.style.left = "50%";
+    listabolas.style.bottom = "-10%";
+    listabolas.style.transform = "translateX(-50%)";
+
+
     while (embrulho.childNodes.length > 0) {
         carrosel.appendChild(embrulho.childNodes[0]);
     }
 
-    for ( var i = 0 ; i < carrosel.children.length; i++){
-        listabolas.append(document.createElement("div"));
-        if ( carrosel.children[i].tagName == ("IMG" || "PICTURE") && !alertado) {
-            console.warn("Alerta carrosel: imagem detectada! \n " +
-                "Por favor garantir que as imagens dentro do carrosel possuam o atributo \n" +
-                "draggable=false \n" +
-                "para garantir uma experiencia optimizada.");
-            alertado = true;
-            carrosel.children[i].setAttribute("draggable",false);
+    for ( let i = 0 ; i < carrosel.children.length; i++){
+        if (colocar_bolas == true) {
+            listabolas.append(document.createElement("div"));
+        }
+        if ( carrosel.children[i].tagName == ("IMG" || "PICTURE")) {
+            carrosel.children[i].setAttribute("draggable", false);
         }
         carrosel.children[i].style.backgroundColor = random_rgba();
 
     }
 
     let setas = [document.createElement("i"),document.createElement("i")];
-    setas[0].classList.add("esquerda"); setas[1].classList.add("direita");
+    setas.forEach( (seta, index) => {
 
-    carrosel.children[0].style.marginLeft = 0;
+        //seta as propriedades das setas
+        seta.style.height = "46px";
+        seta.style.width = "46px";
+        seta.style.cursor = "pointer";
+        seta.style.textAlign = "center";
+        seta.style.fontSize = "1.2rem";
+        seta.style.lineHeight = "46px";
+        seta.style.backgroundColor = "whitesmoke";
+        seta.style.borderRadius = "50%";
+        seta.style.transform = "translateY(-50%)";
+        seta.style.position = "absolute";
+        seta.style.backgroundColor = "red";
+        //
 
-    setas.forEach((seta) => {
-            let tamanhoprimeiroelemento = carrosel.children[1].width;
-            seta.addEventListener("click", () => {
-                let tamanhoprimeiroelemento = (carrosel.children[1].clientWidth) + 14;
-                console.log("clicado.");
+        if (index == 0) {
+            //seta esquerda
+            seta.style.top = "50%";
+            seta.style.left = "-23px";
+            seta.classList.add("esquerda");
+            seta.style.display = "none";
+            carrosel.insertBefore(seta, carrosel.children[0]);
+        } else {
+            //seta direita
+            seta.style.top = "50%";
+            seta.style.right = "-23px";
+            seta.classList.add("direita");
+            carrosel.append(seta)
+        }
 
 
-                if (seta.classList.contains("esquerda")) {
-                    carrosel.scrollLeft -= tamanhoprimeiroelemento ;
-                }else{
-                    carrosel.scrollLeft += tamanhoprimeiroelemento ;
-                }
-                setTimeout(() => mostraresconderflechas(carrosel), 60);
-            });
+
+        seta.addEventListener("click", () => {
+            let tamanhoprimeiroelemento = (carrosel.children[1].clientWidth) + 14;
+            if (seta.classList.contains("esquerda")) {
+                carrosel.scrollLeft -= tamanhoprimeiroelemento ;
+            }else{
+                carrosel.scrollLeft += tamanhoprimeiroelemento ;
+            }
+            setTimeout(() => mostraresconderflechas(carrosel), 60);
+
+        });
+
     });
 
+    //
+    let filhos = [...carrosel.children];
+    for (let i = 0; i < filhos.length; i++ ) {
+        let filho = filhos[i];
+        if (i == 0) {
+
+            continue;
+        }
+        if (i == [...carrosel.children].length - 1) {
+
+            continue;
+        }
 
 
+        filho.style.flexShrink = "0";
+        filho.style.display = "inline-flex";
+        filho.style.height = "340px";
+        filho.style.objectFit = "cover";
+        filho.style.marginLeft = "14px";
+        filho.style.userSelect = "none";
+        filho.style.backgroundColor = "rgb("+ random_rgba() +")";
+
+        let comando = "calc(100% / "+ itensporpartes +")";
+        console.log(itensporpartes);
+
+        filho.style.width = comando;
+    }
+
+
+    carrosel.children[1].style.marginLeft = "0";
 
 
     embrulho.append(listabolas);
-
-    //setas
-    carrosel.insertBefore(setas[0],carrosel.children[0]);
-    carrosel.append(setas[1]);
-
     embrulho.append(carrosel)
 
     //seção addEventListener
@@ -81,6 +166,7 @@ embrulhoscarroseis.forEach((embrulho,index) => {
     carrosel.addEventListener("mouseleave",(evt) =>{fimescorrega(evt,carrosel,index)});
 
 });
+
 
 
 
@@ -114,8 +200,6 @@ const mostraresconderflechas = (carrosel) =>{
     carrosel.children[0].style.display = carrosel.scrollLeft == 0 ? "none" : "block";
     carrosel.children[carrosel.children.length - 1].style.display = carrosel.scrollLeft == tamanhobarra ? "none" : "block";
 }
-
-
 const autoescorrega = (carrosel,index) => {
     let posicaoatual = carrosel.scrollLeft;
 
