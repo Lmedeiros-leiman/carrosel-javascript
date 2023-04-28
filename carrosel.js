@@ -24,7 +24,7 @@ embrulhoscarroseis.forEach((embrulho,index) => {
     embrulho.classList.add("embrulhocarrosel")
 
     //seta as propriedades do embrulho
-    embrulho.style.width = "90vw";
+    embrulho.style.width = "100%";
     embrulho.style.marginTop = "18px";
     embrulho.style.marginBottom = "26px";
     embrulho.style.position = "relative";
