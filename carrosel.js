@@ -141,7 +141,7 @@ embrulhoscarroseis.forEach((embrulho,index) => {
         filho.style.backgroundColor = "rgb("+ random_rgba() +")";
 
         let comando = "calc(100% / "+ itensporpartes +")";
-        console.log(itensporpartes);
+        
 
         filho.style.width = comando;
     }
